@@ -1,0 +1,44 @@
+name: "📚 Entrega o Examen (Universidad)"
+description: "Añadir un examen, entrega de práctica, hito de proyecto o trámite académico."
+title: "[UNI] "
+labels: ["universidad"]
+body:
+  - type: dropdown
+    id: tipo_evento
+    attributes:
+      label: "Tipo de evento"
+      description: "¿Qué tipo de tarea académica es?"
+      options:
+        - Examen
+        - Entrega de Práctica
+        - Proyecto / TFG
+        - Trámite Administrativo
+    validations:
+      required: true
+
+  - type: input
+    id: asignatura
+    attributes:
+      label: "Asignatura o Proyecto"
+      description: "Nombre de la materia o proyecto asociado"
+      placeholder: "Ej. Máster, Robótica, Electrónica..."
+    validations:
+      required: true
+
+  - type: input
+    id: fecha_limite
+    attributes:
+      label: "Fecha límite"
+      description: "Escribe la fecha en formato AAAA-MM-DD para que el calendario la detecte."
+      placeholder: "2026-12-15"
+    validations:
+      required: true
+
+  - type: textarea
+    id: detalles
+    attributes:
+      label: "Detalles / Requisitos"
+      description: "Apuntes, enlaces a documentación o subtareas."
+      placeholder: "- [ ] Subir PDF\n- [ ] Revisar código"
+    validations:
+      required: false
