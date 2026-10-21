@@ -1,1 +1,33 @@
+name: "🏠 Tarea Cotidiana / Recado"
+description: "Tareas del día a día, compras, recados o cosas pendientes."
+title: "[TODO] "
+labels: ["cotidiano"]
+body:
+  - type: dropdown
+    id: categoria
+    attributes:
+      label: "Categoría"
+      options:
+        - Compras
+        - Recados / Reparaciones
+        - Piso / Casa
+        - Personal
+    validations:
+      required: true
 
+  - type: input
+    id: fecha_limite
+    attributes:
+      label: "Fecha planeada (Opcional)"
+      description: "Formato AAAA-MM-DD (déjalo en blanco si no tiene día fijo)"
+      placeholder: "2026-10-25"
+    validations:
+      required: false
+
+  - type: textarea
+    id: notas
+    attributes:
+      label: "Notas adicionales"
+      placeholder: "Ej. Llevar el ticket de compra o preguntar por el presupuesto."
+    validations:
+      required: false
