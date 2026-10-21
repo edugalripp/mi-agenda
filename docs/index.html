@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mi Organizador</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Tailwind CSS para diseño móvil moderno -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FullCalendar para el calendario visual -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    .fc { background: #1e293b; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.78rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    .fc-toolbar-title { font-size: 1.05rem !important; font-weight: 700; color: #f8fafc; text-transform: capitalize; }
+    .fc-button { background-color: #3b82f6 !important; border: none !important; padding: 0.3rem 0.6rem !important; font-size: 0.75rem !important; border-radius: 0.5rem !important; }
+    .fc-daygrid-day-number { color: #cbd5e1; text-decoration: none !important; padding: 4px !important; }
+    .fc-col-header-cell-cushion { color: #94a3b8; font-weight: 600; text-decoration: none !important; }
+    .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid { border-color: #334155 !important; }
+    .fc-day-today { background-color: rgba(59, 130, 246, 0.15) !important; }
+  </style>
+</head>
+<body class="pb-24">
+
+  <!-- Barra Superior -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 p-4 sticky top-0 z-20 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="text-xl">🚀</span>
+      <h1 class="text-lg font-bold tracking-tight text-white">Mi Agenda</h1>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="cargarDatos()" class="text-slate-300 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-sm border border-slate-700">🔄</button>
+      <button onclick="abrirAjustes()" class="text-slate-300 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-sm border border-slate-700">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="p-4 max-w-md mx-auto space-y-4">
+
+    <!-- Alerta de Estado / Error -->
+    <div id="status-msg" class="hidden p-3 rounded-xl text-sm font-medium"></div>
+
+    <!-- VISTA 1: UNIVERSIDAD Y PROYECTOS -->
+    <section id="tab-uni" class="space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-base font-bold text-blue-400 uppercase tracking-wider text-xs">🎯 Trackers de Proyectos (Milestones)</h2>
+      </div>
+      <div id="milestones-list" class="space-y-2.5"></div>
+
+      <div class="flex justify-between items-center pt-3">
+        <h2 class="text-base font-bold text-blue-400 uppercase tracking-wider text-xs">📚 Exámenes y Entregas</h2>
+        <a id="btn-new-uni" href="#" target="_blank" class="bg-blue-600 active:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">+ Añadir</a>
+      </div>
+      <div id="uni-list" class="space-y-3"></div>
+    </section>
+
+    <!-- VISTA 2: CALENDARIO VISUAL -->
+    <section id="tab-cal" class="hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-base font-bold text-purple-400 uppercase tracking-wider text-xs">📅 Calendario de Eventos</h2>
+        <div class="flex gap-2 text-xs">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Uni</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Cotidiano</span>
+        </div>
+      </div>
+      <div id="calendar"></div>
+      <div id="cal-proximos" class="space-y-2 pt-2"></div>
+    </section>
+
+    <!-- VISTA 3: VIDA COTIDIANA / RECADOS -->
+    <section id="tab-todo" class="hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-base font-bold text-emerald-400 uppercase tracking-wider text-xs">🏠 Tareas y Recados Pendientes</h2>
+        <a id="btn-new-todo" href="#" target="_blank" class="bg-emerald-600 active:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">+ Nuevo Recado</a>
+      </div>
+      <div id="todo-list" class="space-y-2.5"></div>
+    </section>
+
+  </main>
+
+  <!-- Modal de Configuración (Usuario, Repo y Token) -->
+  <div id="modal-config" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
+      <h3 class="text-lg font-bold text-white">⚙️ Conectar con tu GitHub</h3>
+      <div class="space-y-3 text-sm">
+        <div>
+          <label class="block text-slate-400 mb-1">Usuario de GitHub</label>
+          <input id="cfg-owner" type="text" value="edugalripp" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Nombre del Repositorio</label>
+          <input id="cfg-repo" type="text" placeholder="Ej. mi-agenda" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1">Personal Access Token (Opcional en repo público, necesario para cerrar tareas desde aquí)</label>
+          <input id="cfg-token" type="password" placeholder="ghp_... o github_pat_..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="cerrarAjustes()" class="px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm">Cancelar</button>
+        <button onclick="guardarAjustes()" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar y Conectar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación Inferior Móvil -->
+  <nav class="fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 flex justify-around p-2 z-20 max-w-md mx-auto">
+    <button onclick="cambiarTab('uni')" id="nav-uni" class="flex flex-col items-center text-blue-400 w-full py-1">
+      <span class="text-xl">📚</span>
+      <span class="text-[11px] font-medium mt-0.5">Universidad</span>
+    </button>
+    <button onclick="cambiarTab('cal')" id="nav-cal" class="flex flex-col items-center text-slate-400 w-full py-1">
+      <span class="text-xl">📅</span>
+      <span class="text-[11px] font-medium mt-0.5">Calendario</span>
+    </button>
+    <button onclick="cambiarTab('todo')" id="nav-todo" class="flex flex-col items-center text-slate-400 w-full py-1">
+      <span class="text-xl">✅</span>
+      <span class="text-[11px] font-medium mt-0.5">Cotidiano</span>
+    </button>
+  </nav>
+
+  <script>
+    let calendarInstance = null;
+    let listaFestivos = [];
+
+    // Detectar automáticamente usuario y repo desde la URL de GitHub Pages
+    function obtenerConfigInicial() {
+      let owner = localStorage.getItem('gh_owner') || 'edugalripp';
+      let repo = localStorage.getItem('gh_repo') || '';
+      if (!repo && window.location.hostname.includes('github.io')) {
+        const partes = window.location.pathname.split('/').filter(Boolean);
+        if (partes.length > 0) repo = partes[0];
+      }
+      return {
+        owner,
+        repo,
+        token: localStorage.getItem('gh_token') || ''
+      };
+    }
+
+    function abrirAjustes() {
+      const cfg = obtenerConfigInicial();
+      document.getElementById('cfg-owner').value = cfg.owner;
+      document.getElementById('cfg-repo').value = cfg.repo;
+      document.getElementById('cfg-token').value = cfg.token;
+      document.getElementById('modal-config').classList.remove('hidden');
+    }
+
+    function cerrarAjustes() {
+      document.getElementById('modal-config').classList.add('hidden');
+    }
+
+    function guardarAjustes() {
+      localStorage.setItem('gh_owner', document.getElementById('cfg-owner').value.trim());
+      localStorage.setItem('gh_repo', document.getElementById('cfg-repo').value.trim());
+      localStorage.setItem('gh_token', document.getElementById('cfg-token').value.trim());
+      cerrarAjustes();
+      cargarDatos();
+    }
+
+    function cambiarTab(tab) {
+      ['uni', 'cal', 'todo'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).classList.replace('text-blue-400', 'text-slate-400');
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.getElementById(`nav-${tab}`).classList.replace('text-slate-400', 'text-blue-400');
+      if (tab === 'cal' && calendarInstance) {
+        setTimeout(() => calendarInstance.render(), 50);
+      }
+    }
+
+    function extraerCampo(body, nombreCampo) {
+      if (!body) return null;
+      const regex = new RegExp(`### ${nombreCampo}\\s+([^\\n\\r]+)`, 'i');
+      const match = body.match(regex);
+      if (!match) return null;
+      const valor = match[1].trim();
+      return (valor === '_No response_' || valor === '') ? null : valor;
+    }
+
+    function extraerFecha(body) {
+      if (!body) return null;
+      const match = body.match(/(\d{4}-\d{2}-\d{2})/);
+      return match ? match[1] : null;
+    }
+
+    function calcularDiasJS(fechaObjetivoStr, festivos) {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const [year, month, day] = fechaObjetivoStr.split('-').map(Number);
+      const fechaObjetivo = new Date(year, month - 1, day);
+      const diffTime = fechaObjetivo - hoy;
+      const diasTotales = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diasTotales <= 0) return { totales: diasTotales, lectivos: 0, festivos: 0 };
+
+      let diasFestivos = 0, diasLectivos = 0;
+      for (let i = 1; i <= diasTotales; i++) {
+        const d = new Date(hoy);
+        d.setDate(hoy.getDate() + i);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const diaStr = `${yyyy}-${mm}-${dd}`;
+        const esFinde = (d.getDay() === 0 || d.getDay() === 6);
+        if (esFinde || festivos.includes(diaStr)) diasFestivos++;
+        else diasLectivos++;
+      }
+      return { totales: diasTotales, lectivos: diasLectivos, festivos: diasFestivos };
+    }
+
+    async function cargarDatos() {
+      const cfg = obtenerConfigInicial();
+      if (!cfg.owner || !cfg.repo) {
+        abrirAjustes();
+        return;
+      }
+
+      // Actualizar botones para crear nuevas tareas directamente con plantilla
+      document.getElementById('btn-new-uni').href = `https://github.com/${cfg.owner}/${cfg.repo}/issues/new?template=universidad.yml`;
+      document.getElementById('btn-new-todo').href = `https://github.com/${cfg.owner}/${cfg.repo}/issues/new?template=cotidiano.yml`;
+
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (cfg.token) headers['Authorization'] = `token ${cfg.token}`;
+
+      try {
+        // 1. Cargar festivos.json
+        try {
+          const resFest = await fetch('festivos.json');
+          if (resFest.ok) {
+            const dataFest = await resFest.json();
+            listaFestivos = dataFest.festivos_2026_2027 || [];
+          }
+        } catch (e) { console.warn('Sin festivos.json o error al leerlo'); }
+
+        // 2. Cargar Milestones (Trackers a largo plazo)
+        const resMiles = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/milestones?state=open`, { headers });
+        const milestones = resMiles.ok ? await resMiles.json() : [];
+        renderMilestones(milestones);
+
+        // 3. Cargar Issues abiertos
+        const resIssues = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/issues?state=open&per_page=100`, { headers });
+        if (!resIssues.ok) throw new Error('No se pudo leer el repositorio. Si es privado, añade tu Token en ⚙️.');
+        const issues = (await resIssues.json()).filter(i => !i.pull_request);
+
+        document.getElementById('status-msg').classList.add('hidden');
+        renderIssuesYCalendario(issues);
+
+      } catch (err) {
+        const msg = document.getElementById('status-msg');
+        msg.textContent = err.message;
+        msg.className = 'p-3 rounded-xl text-sm font-medium bg-red-900/50 border border-red-700 text-red-200';
+        msg.classList.remove('hidden');
+      }
+    }
+
+    function renderMilestones(milestones) {
+      const cont = document.getElementById('milestones-list');
+      if (!milestones.length) {
+        cont.innerHTML = `<p class="text-xs text-slate-500 italic">No hay Milestones activos aún.</p>`;
+        return;
+      }
+      cont.innerHTML = milestones.map(m => {
+        const total = m.open_issues + m.closed_issues;
+        const pct = total === 0 ? 0 : Math.round((m.closed_issues / total) * 100);
+        return `
+          <div class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3">
+            <div class="flex justify-between text-xs font-semibold mb-1.5">
+              <span class="text-white">${m.title}</span>
+              <span class="text-blue-400">${pct}% (${m.closed_issues}/${total})</span>
+            </div>
+            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+              <div class="bg-blue-500 h-full transition-all" style="width: ${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderIssuesYCalendario(issues) {
+      const uniCont = document.getElementById('uni-list');
+      const todoCont = document.getElementById('todo-list');
+      const eventosCalendario = [];
+
+      const uniIssues = [];
+      const todoIssues = [];
+
+      issues.forEach(issue => {
+        const labels = issue.labels.map(l => l.name.toLowerCase());
+        const fecha = extraerFecha(issue.body);
+        const esUni = labels.includes('universidad') || issue.title.toUpperCase().includes('[UNI]');
+
+        if (fecha) {
+          eventosCalendario.push({
+            title: issue.title.replace(/^\[(UNI\vert{}TODO)\]\s*/i, ''),
+            start: fecha,
+            backgroundColor: esUni ? '#3b82f6' : '#10b981',
+            url: issue.html_url
+          });
+        }
+
+        if (esUni) uniIssues.push({ issue, fecha });
+        else todoIssues.push({ issue, fecha });
+      });
+
+      // Ordenar Universidad por fecha más cercana
+      uniIssues.sort((a, b) => (a.fecha || '9999') > (b.fecha || '9999') ? 1 : -1);
+
+      // Renderizar tarjetas de Universidad con los 3 contadores
+      uniCont.innerHTML = uniIssues.length ? uniIssues.map(({ issue, fecha }) => {
+        const asignatura = extraerCampo(issue.body, 'Asignatura o Proyecto') || 'Universidad';
+        const tipo = extraerCampo(issue.body, 'Tipo de evento') || 'Entrega';
+        let badgesDias = `<span class="text-xs text-slate-400">Sin fecha asignada</span>`;
+        let colorBorde = 'border-slate-700';
+
+        if (fecha) {
+          const d = calcularDiasJS(fecha, listaFestivos);
+          if (d.totales < 0) {
+            badgesDias = `<span class="text-xs text-red-400 font-bold">Vencida (${fecha})</span>`;
+          } else if (d.totales === 0) {
+            badgesDias = `<span class="text-xs text-amber-400 font-bold">¡Es HOY! (${fecha})</span>`;
+            colorBorde = 'border-amber-500';
+          } else {
+            if (d.totales <= 5) colorBorde = 'border-red-500/80';
+            else if (d.totales <= 12) colorBorde = 'border-amber-500/80';
+            badgesDias = `
+              <div class="grid grid-cols-3 gap-1.5 pt-2 text-center">
+                <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-700/60">
+                  <div class="text-base font-extrabold text-white">${d.totales}</div>
+                  <div class="text-[10px] text-slate-400 uppercase">Totales</div>
+                </div>
+                <div class="bg-blue-950/60 p-1.5 rounded-lg border border-blue-800/60">
+                  <div class="text-base font-extrabold text-blue-400">${d.lectivos}</div>
+                  <div class="text-[10px] text-blue-300 uppercase">Lectivos</div>
+                </div>
+                <div class="bg-amber-950/50 p-1.5 rounded-lg border border-amber-800/50">
+                  <div class="text-base font-extrabold text-amber-400">${d.festivos}</div>
+                  <div class="text-[10px] text-amber-300 uppercase">Festivos/Finde</div>
+                </div>
+              </div>`;
+          }
+        }
+
+        return `
+          <div class="bg-slate-800 border-l-4 ${colorBorde} rounded-xl p-3.5 shadow space-y-1.5">
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">${asignatura} · ${tipo}</span>
+                <a href="${issue.html_url}" target="_blank" class="block text-sm font-bold text-white mt-1 hover:underline">${issue.title.replace(/^\[UNI\]\s*/i, '')}</a>
+              </div>
+              <button onclick="completarTarea(${issue.number})" title="Marcar como completada" class="text-xs bg-slate-700 hover:bg-emerald-600 text-slate-200 px-2.5 py-1 rounded-lg transition">✓ Hecho</button>
+            </div>
+            <div class="text-xs text-slate-400">📅 Fecha límite: <strong class="text-slate-200">${fecha || 'No definida'}</strong></div>
+            ${badgesDias}
+          </div>`;
+      }).join('') : `<p class="text-xs text-slate-500 italic">No tienes entregas pendientes.</p>`;
+
+      // Renderizar lista de Cotidiano
+      todoCont.innerHTML = todoIssues.length ? todoIssues.map(({ issue, fecha }) => {
+        const cat = extraerCampo(issue.body, 'Categoría') || 'General';
+        return `
+          <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" onchange="completarTarea(${issue.number})" class="w-5 h-5 rounded accent-emerald-500 cursor-pointer">
+              <div>
+                <a href="${issue.html_url}" target="_blank" class="text-sm font-medium text-white hover:underline">${issue.title.replace(/^\[TODO\]\s*/i, '')}</a>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-[10px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded">${cat}</span>
+                  ${fecha ? `<span class="text-[11px] text-slate-400">📅 ${fecha}</span>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('') : `<p class="text-xs text-slate-500 italic">Todo al día. ¡No hay recados pendientes!</p>`;
+
+      // Inicializar o actualizar el Calendario Visual
+      const calEl = document.getElementById('calendar');
+      if (calendarInstance) calendarInstance.destroy();
+      calendarInstance = new FullCalendar.Calendar(calEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        firstDay: 1,
+        height: 'auto',
+        headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
+        buttonText: { today: 'Hoy' },
+        events: eventosCalendario,
+        eventClick: function(info) {
+          info.jsEvent.preventDefault();
+          if (info.event.url) window.open(info.event.url, '_blank');
+        }
+      });
+      calendarInstance.render();
+    }
+
+    async function completarTarea(issueNumber) {
+      const cfg = obtenerConfigInicial();
+      if (!cfg.token) {
+        alert('Para cerrar tareas directamente marcando la casilla desde el móvil, pega tu Personal Access Token en el botón ⚙️ de arriba a la derecha.');
+        cargarDatos();
+        return;
+      }
+      try {
+        const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/issues/${issueNumber}`, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': `token ${cfg.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ state: 'closed' })
+        });
+        if (!res.ok) throw new Error('Error al cerrar la tarea. Verifica los permisos de tu Token.');
+        cargarDatos();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', cargarDatos);
+  </script>
+</body>
+</html>
