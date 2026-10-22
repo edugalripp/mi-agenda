@@ -408,13 +408,8 @@
       }).join('');
     }
 
-function procesarIssues(issues) {
-  datosPorAsignatura = {};
-
+    function procesarIssues(issues) {
       datosPorAsignatura = {};
-      ASIGNATURAS_FIJAS.forEach(nombre => {
-        datosPorAsignatura[nombre] = { examenes: [], entregas: [], tareas: [] };
-      });
       const todosLosExamenes = [];
       const todoIssues = [];
       const eventosCalendario = [];
@@ -557,9 +552,7 @@ function procesarIssues(issues) {
         alert(e.message);
       }
     }
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
-    }
+
     window.addEventListener('DOMContentLoaded', cargarDatos);
   </script>
 </body>
