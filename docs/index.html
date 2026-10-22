@@ -8,9 +8,7 @@
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <!-- Tailwind CSS para diseño móvil moderno -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FullCalendar para el calendario visual -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <style>
     body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -37,43 +35,87 @@
     </div>
   </header>
 
-  <!-- Contenedor Principal -->
   <main class="p-4 max-w-md mx-auto space-y-4">
 
-    <!-- Alerta de Estado / Error -->
     <div id="status-msg" class="hidden p-3 rounded-xl text-sm font-medium"></div>
 
-    <!-- VISTA 1: UNIVERSIDAD Y PROYECTOS -->
-    <section id="tab-uni" class="space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="text-base font-bold text-blue-400 uppercase tracking-wider text-xs">🎯 Trackers de Proyectos (Milestones)</h2>
-      </div>
-      <div id="milestones-list" class="space-y-2.5"></div>
+    <!-- VISTA 1: UNIVERSIDAD (Resumen Global + Asignaturas) -->
+    <section id="tab-uni" class="space-y-5">
 
-      <div class="flex justify-between items-center pt-3">
-        <h2 class="text-base font-bold text-blue-400 uppercase tracking-wider text-xs">📚 Exámenes y Entregas</h2>
-        <a id="btn-new-uni" href="#" target="_blank" class="bg-blue-600 active:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">+ Añadir</a>
+      <!-- SUB-VISTA A: Panel Principal de Universidad -->
+      <div id="uni-home-view" class="space-y-5">
+        
+        <!-- 1. Mis Asignaturas (Acceso rápido por materia) -->
+        <div>
+          <div class="flex justify-between items-center mb-2.5">
+            <h2 class="text-xs font-bold text-blue-400 uppercase tracking-wider">📂 Mis Asignaturas (Toca para abrir)</h2>
+            <a id="btn-new-uni" href="#" target="_blank" class="bg-blue-600 active:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">+ Añadir Tarea/Entrega</a>
+          </div>
+          <div id="subjects-grid" class="grid grid-cols-2 gap-2.5"></div>
+        </div>
+
+        <!-- 2. Próximos Exámenes de TODAS las asignaturas -->
+        <div>
+          <h2 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-2.5">🎓 Próximos Exámenes (Todas las asignaturas)</h2>
+          <div id="global-exams-list" class="space-y-3"></div>
+        </div>
+
+        <!-- 3. Trackers a Largo Plazo (Milestones) -->
+        <div>
+          <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2.5">🎯 Trackers de Proyectos (Milestones)</h2>
+          <div id="milestones-list" class="space-y-2.5"></div>
+        </div>
+
       </div>
-      <div id="uni-list" class="space-y-3"></div>
+
+      <!-- SUB-VISTA B: Interior de una Asignatura Específica -->
+      <div id="uni-subject-view" class="hidden space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <button onclick="volverAUniHome()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1 font-semibold">
+            ← Volver
+          </button>
+          <h2 id="subject-title" class="text-base font-extrabold text-white truncate max-w-[200px]">Asignatura</h2>
+          <a id="btn-new-subj-task" href="#" target="_blank" class="bg-blue-600 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg">+ Añadir</a>
+        </div>
+
+        <!-- Exámenes de esta asignatura -->
+        <div>
+          <h3 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-2">🎓 Exámenes de la asignatura</h3>
+          <div id="subj-exams-list" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Entregas y Prácticas con contador de días -->
+        <div>
+          <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">⏳ Entregas y Prácticas Pendientes</h3>
+          <div id="subj-deliveries-list" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Tareas diarias / Estudio de la asignatura -->
+        <div>
+          <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">📝 Por hacer / Estudio diario</h3>
+          <div id="subj-tasks-list" class="space-y-2.5"></div>
+        </div>
+      </div>
+
     </section>
 
     <!-- VISTA 2: CALENDARIO VISUAL -->
     <section id="tab-cal" class="hidden space-y-4">
       <div class="flex justify-between items-center">
-        <h2 class="text-base font-bold text-purple-400 uppercase tracking-wider text-xs">📅 Calendario de Eventos</h2>
-        <div class="flex gap-2 text-xs">
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Uni</span>
+        <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wider">📅 Calendario Visual</h2>
+        <div class="flex gap-2 text-[11px]">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Examen</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Entrega</span>
           <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Cotidiano</span>
         </div>
       </div>
       <div id="calendar"></div>
-      <div id="cal-proximos" class="space-y-2 pt-2"></div>
     </section>
 
     <!-- VISTA 3: VIDA COTIDIANA / RECADOS -->
     <section id="tab-todo" class="hidden space-y-4">
       <div class="flex justify-between items-center">
-        <h2 class="text-base font-bold text-emerald-400 uppercase tracking-wider text-xs">🏠 Tareas y Recados Pendientes</h2>
+        <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">🏠 Tareas y Recados Cotidianos</h2>
         <a id="btn-new-todo" href="#" target="_blank" class="bg-emerald-600 active:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow">+ Nuevo Recado</a>
       </div>
       <div id="todo-list" class="space-y-2.5"></div>
@@ -81,7 +123,7 @@
 
   </main>
 
-  <!-- Modal de Configuración (Usuario, Repo y Token) -->
+  <!-- Modal de Configuración -->
   <div id="modal-config" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
       <h3 class="text-lg font-bold text-white">⚙️ Conectar con tu GitHub</h3>
@@ -92,16 +134,16 @@
         </div>
         <div>
           <label class="block text-slate-400 mb-1">Nombre del Repositorio</label>
-          <input id="cfg-repo" type="text" placeholder="Ej. mi-agenda" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
+          <input id="cfg-repo" type="text" value="mi-agenda" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
         </div>
         <div>
-          <label class="block text-slate-400 mb-1">Personal Access Token (Opcional en repo público, necesario para cerrar tareas desde aquí)</label>
+          <label class="block text-slate-400 mb-1">Personal Access Token (Para cerrar tareas con un toque)</label>
           <input id="cfg-token" type="password" placeholder="ghp_... o github_pat_..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="cerrarAjustes()" class="px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm">Cancelar</button>
-        <button onclick="guardarAjustes()" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar y Conectar</button>
+        <button onclick="guardarAjustes()" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Guardar</button>
       </div>
     </div>
   </div>
@@ -125,20 +167,17 @@
   <script>
     let calendarInstance = null;
     let listaFestivos = [];
+    let datosPorAsignatura = {};
+    let asignaturaActiva = null;
 
-    // Detectar automáticamente usuario y repo desde la URL de GitHub Pages
     function obtenerConfigInicial() {
       let owner = localStorage.getItem('gh_owner') || 'edugalripp';
-      let repo = localStorage.getItem('gh_repo') || '';
-      if (!repo && window.location.hostname.includes('github.io')) {
+      let repo = localStorage.getItem('gh_repo') || 'mi-agenda';
+      if (window.location.hostname.includes('github.io')) {
         const partes = window.location.pathname.split('/').filter(Boolean);
         if (partes.length > 0) repo = partes[0];
       }
-      return {
-        owner,
-        repo,
-        token: localStorage.getItem('gh_token') || ''
-      };
+      return { owner, repo, token: localStorage.getItem('gh_token') || '' };
     }
 
     function abrirAjustes() {
@@ -168,14 +207,61 @@
       });
       document.getElementById(`tab-${tab}`).classList.remove('hidden');
       document.getElementById(`nav-${tab}`).classList.replace('text-slate-400', 'text-blue-400');
-      if (tab === 'cal' && calendarInstance) {
-        setTimeout(() => calendarInstance.render(), 50);
-      }
+      if (tab === 'uni') volverAUniHome();
+      if (tab === 'cal' && calendarInstance) setTimeout(() => calendarInstance.render(), 50);
+    }
+
+    function volverAUniHome() {
+      asignaturaActiva = null;
+      document.getElementById('uni-subject-view').classList.add('hidden');
+      document.getElementById('uni-home-view').classList.remove('hidden');
+    }
+
+    function abrirAsignatura(nombre) {
+      asignaturaActiva = nombre;
+      document.getElementById('uni-home-view').classList.add('hidden');
+      document.getElementById('uni-subject-view').classList.remove('hidden');
+      document.getElementById('subject-title').textContent = nombre;
+
+      const grupo = datosPorAsignatura[nombre] || { examenes: [], entregas: [], tareas: [] };
+
+      // 1. Renderizar Exámenes de la asignatura
+      const exCont = document.getElementById('subj-exams-list');
+      exCont.innerHTML = grupo.examenes.length
+        ? grupo.examenes.map(item => crearTarjetaConContador(item.issue, item.fecha, item.asignatura, 'Examen', item.detalles)).join('')
+        : `<p class="text-xs text-slate-500 italic">No hay exámenes apuntados en esta asignatura.</p>`;
+
+      // 2. Renderizar Entregas con su contador triple de días
+      const entCont = document.getElementById('subj-deliveries-list');
+      entCont.innerHTML = grupo.entregas.length
+        ? grupo.entregas.map(item => crearTarjetaConContador(item.issue, item.fecha, item.asignatura, item.tipo, item.detalles)).join('')
+        : `<p class="text-xs text-slate-500 italic">No tienes entregas con fecha pendientes aquí.</p>`;
+
+      // 3. Renderizar Tareas de estudio / pendientes de la asignatura
+      const tarCont = document.getElementById('subj-tasks-list');
+      tarCont.innerHTML = grupo.tareas.length
+        ? grupo.tareas.map(item => `
+          <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-3 space-y-1.5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-2.5">
+                <input type="checkbox" onchange="completarTarea(${item.issue.number})" class="w-5 h-5 mt-0.5 rounded accent-emerald-500 cursor-pointer">
+                <div>
+                  <a href="${item.issue.html_url}" target="_blank" class="text-sm font-semibold text-white hover:underline">${limpiarTitulo(item.issue.title)}</a>
+                  ${item.detalles ? `<p class="text-xs text-slate-400 whitespace-pre-line mt-1">${item.detalles}</p>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>`).join('')
+        : `<p class="text-xs text-slate-500 italic">No hay tareas pendientes de estudio en esta asignatura.</p>`;
+    }
+
+    function limpiarTitulo(titulo) {
+      return titulo.replace(/^\[(UNI\vert{}TODO)\]\s*/i, '');
     }
 
     function extraerCampo(body, nombreCampo) {
       if (!body) return null;
-      const regex = new RegExp(`### ${nombreCampo}\\s+([^\\n\\r]+)`, 'i');
+      const regex = new RegExp(`### ${nombreCampo}[^\\n]*\\s+([\\s\\S]*?)(?=\\n### |$)`, 'i');
       const match = body.match(regex);
       if (!match) return null;
       const valor = match[1].trim();
@@ -213,42 +299,84 @@
       return { totales: diasTotales, lectivos: diasLectivos, festivos: diasFestivos };
     }
 
-    async function cargarDatos() {
-      const cfg = obtenerConfigInicial();
-      if (!cfg.owner || !cfg.repo) {
-        abrirAjustes();
-        return;
+    function crearTarjetaConContador(issue, fecha, asignatura, tipo, detalles) {
+      let badgesDias = `<span class="text-xs text-slate-400">Sin fecha límite definida</span>`;
+      let esExamen = tipo.toLowerCase().includes('examen');
+      let colorBorde = esExamen ? 'border-rose-500' : 'border-blue-500';
+      let badgeColor = esExamen ? 'bg-rose-500/20 text-rose-300' : 'bg-blue-500/20 text-blue-300';
+
+      if (fecha) {
+        const d = calcularDiasJS(fecha, listaFestivos);
+        if (d.totales < 0) {
+          badgesDias = `<span class="text-xs text-red-400 font-bold">Vencida (${fecha})</span>`;
+        } else if (d.totales === 0) {
+          badgesDias = `<span class="text-xs text-amber-400 font-bold">¡Es HOY! (${fecha})</span>`;
+          colorBorde = 'border-amber-500';
+        } else {
+          badgesDias = `
+            <div class="grid grid-cols-3 gap-1.5 pt-2 text-center">
+              <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-700/60">
+                <div class="text-base font-extrabold text-white">${d.totales}</div>
+                <div class="text-[10px] text-slate-400 uppercase">Días Totales</div>
+              </div>
+              <div class="bg-blue-950/60 p-1.5 rounded-lg border border-blue-800/60">
+                <div class="text-base font-extrabold text-blue-400">${d.lectivos}</div>
+                <div class="text-[10px] text-blue-300 uppercase">Lectivos</div>
+              </div>
+              <div class="bg-amber-950/50 p-1.5 rounded-lg border border-amber-800/50">
+                <div class="text-base font-extrabold text-amber-400">${d.festivos}</div>
+                <div class="text-[10px] text-amber-300 uppercase">Festivos/Finde</div>
+              </div>
+            </div>`;
+        }
       }
 
-      // Actualizar botones para crear nuevas tareas directamente con plantilla
-      document.getElementById('btn-new-uni').href = `https://github.com/${cfg.owner}/${cfg.repo}/issues/new?template=universidad.yml`;
+      return `
+        <div class="bg-slate-800 border-l-4 ${colorBorde} rounded-xl p-3.5 shadow space-y-1.5">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${badgeColor}">${asignatura} · ${tipo}</span>
+              <a href="${issue.html_url}" target="_blank" class="block text-sm font-bold text-white mt-1 hover:underline">${limpiarTitulo(issue.title)}</a>
+            </div>
+            <button onclick="completarTarea(${issue.number})" class="text-xs bg-slate-700 hover:bg-emerald-600 text-slate-200 px-2.5 py-1 rounded-lg transition shrink-0">✓ Hecho</button>
+          </div>
+          ${detalles ? `<p class="text-xs text-slate-300 bg-slate-900/50 p-2 rounded-lg whitespace-pre-line">${detalles}</p>` : ''}
+          <div class="text-xs text-slate-400">📅 Fecha: <strong class="text-slate-200">${fecha || 'Sin fecha'}</strong></div>
+          ${badgesDias}
+        </div>`;
+    }
+
+    async function cargarDatos() {
+      const cfg = obtenerConfigInicial();
+      const urlUniNew = `https://github.com/${cfg.owner}/${cfg.repo}/issues/new?template=universidad.yml`;
+      document.getElementById('btn-new-uni').href = urlUniNew;
+      document.getElementById('btn-new-subj-task').href = urlUniNew;
       document.getElementById('btn-new-todo').href = `https://github.com/${cfg.owner}/${cfg.repo}/issues/new?template=cotidiano.yml`;
 
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
       if (cfg.token) headers['Authorization'] = `token ${cfg.token}`;
 
       try {
-        // 1. Cargar festivos.json
         try {
           const resFest = await fetch('festivos.json');
           if (resFest.ok) {
             const dataFest = await resFest.json();
             listaFestivos = dataFest.festivos_2026_2027 || [];
           }
-        } catch (e) { console.warn('Sin festivos.json o error al leerlo'); }
+        } catch (e) {}
 
-        // 2. Cargar Milestones (Trackers a largo plazo)
         const resMiles = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/milestones?state=open`, { headers });
         const milestones = resMiles.ok ? await resMiles.json() : [];
         renderMilestones(milestones);
 
-        // 3. Cargar Issues abiertos
         const resIssues = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/issues?state=open&per_page=100`, { headers });
-        if (!resIssues.ok) throw new Error('No se pudo leer el repositorio. Si es privado, añade tu Token en ⚙️.');
+        if (!resIssues.ok) throw new Error('No se pudo leer el repositorio. Verifica el nombre en ⚙️.');
         const issues = (await resIssues.json()).filter(i => !i.pull_request);
 
         document.getElementById('status-msg').classList.add('hidden');
-        renderIssuesYCalendario(issues);
+        procesarIssues(issues);
+
+        if (asignaturaActiva) abrirAsignatura(asignaturaActiva);
 
       } catch (err) {
         const msg = document.getElementById('status-msg');
@@ -271,94 +399,100 @@
           <div class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3">
             <div class="flex justify-between text-xs font-semibold mb-1.5">
               <span class="text-white">${m.title}</span>
-              <span class="text-blue-400">${pct}% (${m.closed_issues}/${total})</span>
+              <span class="text-indigo-400">${pct}% (${m.closed_issues}/${total})</span>
             </div>
             <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-              <div class="bg-blue-500 h-full transition-all" style="width: ${pct}%"></div>
+              <div class="bg-indigo-500 h-full transition-all" style="width: ${pct}%"></div>
             </div>
           </div>`;
       }).join('');
     }
 
-    function renderIssuesYCalendario(issues) {
-      const uniCont = document.getElementById('uni-list');
-      const todoCont = document.getElementById('todo-list');
-      const eventosCalendario = [];
-
-      const uniIssues = [];
+    function procesarIssues(issues) {
+      datosPorAsignatura = {};
+      const todosLosExamenes = [];
       const todoIssues = [];
+      const eventosCalendario = [];
 
       issues.forEach(issue => {
         const labels = issue.labels.map(l => l.name.toLowerCase());
         const fecha = extraerFecha(issue.body);
         const esUni = labels.includes('universidad') || issue.title.toUpperCase().includes('[UNI]');
 
-        if (fecha) {
-          eventosCalendario.push({
-            title: issue.title.replace(/^\[(UNI\vert{}TODO)\]\s*/i, ''),
-            start: fecha,
-            backgroundColor: esUni ? '#3b82f6' : '#10b981',
-            url: issue.html_url
-          });
-        }
+        if (esUni) {
+          const asignatura = extraerCampo(issue.body, 'Asignatura o Proyecto') || 'General';
+          const tipo = extraerCampo(issue.body, 'Tipo') || 'Entrega';
+          const detalles = extraerCampo(issue.body, 'Detalles') || '';
 
-        if (esUni) uniIssues.push({ issue, fecha });
-        else todoIssues.push({ issue, fecha });
-      });
+          if (!datosPorAsignatura[asignatura]) {
+            datosPorAsignatura[asignatura] = { examenes: [], entregas: [], tareas: [] };
+          }
 
-      // Ordenar Universidad por fecha más cercana
-      uniIssues.sort((a, b) => (a.fecha || '9999') > (b.fecha || '9999') ? 1 : -1);
+          const itemObj = { issue, fecha, asignatura, tipo, detalles };
+          const esExamen = tipo.toLowerCase().includes('examen') || issue.title.toLowerCase().includes('examen');
+          const esTareaSinFecha = tipo.toLowerCase().includes('tarea') || !fecha;
 
-      // Renderizar tarjetas de Universidad con los 3 contadores
-      uniCont.innerHTML = uniIssues.length ? uniIssues.map(({ issue, fecha }) => {
-        const asignatura = extraerCampo(issue.body, 'Asignatura o Proyecto') || 'Universidad';
-        const tipo = extraerCampo(issue.body, 'Tipo de evento') || 'Entrega';
-        let badgesDias = `<span class="text-xs text-slate-400">Sin fecha asignada</span>`;
-        let colorBorde = 'border-slate-700';
-
-        if (fecha) {
-          const d = calcularDiasJS(fecha, listaFestivos);
-          if (d.totales < 0) {
-            badgesDias = `<span class="text-xs text-red-400 font-bold">Vencida (${fecha})</span>`;
-          } else if (d.totales === 0) {
-            badgesDias = `<span class="text-xs text-amber-400 font-bold">¡Es HOY! (${fecha})</span>`;
-            colorBorde = 'border-amber-500';
+          if (esExamen) {
+            datosPorAsignatura[asignatura].examenes.push(itemObj);
+            todosLosExamenes.push(itemObj);
+          } else if (esTareaSinFecha) {
+            datosPorAsignatura[asignatura].tareas.push(itemObj);
           } else {
-            if (d.totales <= 5) colorBorde = 'border-red-500/80';
-            else if (d.totales <= 12) colorBorde = 'border-amber-500/80';
-            badgesDias = `
-              <div class="grid grid-cols-3 gap-1.5 pt-2 text-center">
-                <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-700/60">
-                  <div class="text-base font-extrabold text-white">${d.totales}</div>
-                  <div class="text-[10px] text-slate-400 uppercase">Totales</div>
-                </div>
-                <div class="bg-blue-950/60 p-1.5 rounded-lg border border-blue-800/60">
-                  <div class="text-base font-extrabold text-blue-400">${d.lectivos}</div>
-                  <div class="text-[10px] text-blue-300 uppercase">Lectivos</div>
-                </div>
-                <div class="bg-amber-950/50 p-1.5 rounded-lg border border-amber-800/50">
-                  <div class="text-base font-extrabold text-amber-400">${d.festivos}</div>
-                  <div class="text-[10px] text-amber-300 uppercase">Festivos/Finde</div>
-                </div>
-              </div>`;
+            datosPorAsignatura[asignatura].entregas.push(itemObj);
+          }
+
+          if (fecha) {
+            eventosCalendario.push({
+              title: `[${asignatura}] ${limpiarTitulo(issue.title)}`,
+              start: fecha,
+              backgroundColor: esExamen ? '#f43f5e' : '#3b82f6',
+              url: issue.html_url
+            });
+          }
+        } else {
+          todoIssues.push({ issue, fecha });
+          if (fecha) {
+            eventosCalendario.push({
+              title: limpiarTitulo(issue.title),
+              start: fecha,
+              backgroundColor: '#10b981',
+              url: issue.html_url
+            });
           }
         }
+      });
 
+      // Ordenar Exámenes y Entregas por fecha
+      todosLosExamenes.sort((a, b) => (a.fecha || '9999') > (b.fecha || '9999') ? 1 : -1);
+      Object.values(datosPorAsignatura).forEach(g => {
+        g.examenes.sort((a, b) => (a.fecha || '9999') > (b.fecha || '9999') ? 1 : -1);
+        g.entregas.sort((a, b) => (a.fecha || '9999') > (b.fecha || '9999') ? 1 : -1);
+      });
+
+      // Renderizar Cuadrícula de Asignaturas
+      const subjGrid = document.getElementById('subjects-grid');
+      const nombresAsignaturas = Object.keys(datosPorAsignatura).sort();
+      subjGrid.innerHTML = nombresAsignaturas.length ? nombresAsignaturas.map(nombre => {
+        const g = datosPorAsignatura[nombre];
+        const totalPendientes = g.entregas.length + g.tareas.length;
         return `
-          <div class="bg-slate-800 border-l-4 ${colorBorde} rounded-xl p-3.5 shadow space-y-1.5">
-            <div class="flex justify-between items-start gap-2">
-              <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">${asignatura} · ${tipo}</span>
-                <a href="${issue.html_url}" target="_blank" class="block text-sm font-bold text-white mt-1 hover:underline">${issue.title.replace(/^\[UNI\]\s*/i, '')}</a>
-              </div>
-              <button onclick="completarTarea(${issue.number})" title="Marcar como completada" class="text-xs bg-slate-700 hover:bg-emerald-600 text-slate-200 px-2.5 py-1 rounded-lg transition">✓ Hecho</button>
+          <button onclick="abrirAsignatura('${nombre.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-slate-750 active:scale-[0.98] border border-slate-700/80 rounded-xl p-3 text-left transition flex flex-col justify-between">
+            <div class="font-bold text-sm text-white line-clamp-2">${nombre}</div>
+            <div class="flex flex-wrap gap-1.5 mt-2.5">
+              ${g.examenes.length ? `<span class="text-[10px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-semibold">🎓 ${g.examenes.length} ex.</span>` : ''}
+              <span class="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded font-semibold">📌 ${totalPendientes} pend.</span>
             </div>
-            <div class="text-xs text-slate-400">📅 Fecha límite: <strong class="text-slate-200">${fecha || 'No definida'}</strong></div>
-            ${badgesDias}
-          </div>`;
-      }).join('') : `<p class="text-xs text-slate-500 italic">No tienes entregas pendientes.</p>`;
+          </button>`;
+      }).join('') : `<p class="text-xs text-slate-500 italic col-span-2">Aún no hay asignaturas con tareas activas.</p>`;
 
-      // Renderizar lista de Cotidiano
+      // Renderizar Exámenes Globales de todas las asignaturas
+      const globalExamsCont = document.getElementById('global-exams-list');
+      globalExamsCont.innerHTML = todosLosExamenes.length
+        ? todosLosExamenes.map(item => crearTarjetaConContador(item.issue, item.fecha, item.asignatura, 'Examen', item.detalles)).join('')
+        : `<p class="text-xs text-slate-500 italic">No hay fechas de examen registradas todavía.</p>`;
+
+      // Renderizar Cotidiano
+      const todoCont = document.getElementById('todo-list');
       todoCont.innerHTML = todoIssues.length ? todoIssues.map(({ issue, fecha }) => {
         const cat = extraerCampo(issue.body, 'Categoría') || 'General';
         return `
@@ -366,7 +500,7 @@
             <div class="flex items-center gap-3">
               <input type="checkbox" onchange="completarTarea(${issue.number})" class="w-5 h-5 rounded accent-emerald-500 cursor-pointer">
               <div>
-                <a href="${issue.html_url}" target="_blank" class="text-sm font-medium text-white hover:underline">${issue.title.replace(/^\[TODO\]\s*/i, '')}</a>
+                <a href="${issue.html_url}" target="_blank" class="text-sm font-medium text-white hover:underline">${limpiarTitulo(issue.title)}</a>
                 <div class="flex items-center gap-2 mt-0.5">
                   <span class="text-[10px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded">${cat}</span>
                   ${fecha ? `<span class="text-[11px] text-slate-400">📅 ${fecha}</span>` : ''}
@@ -374,9 +508,9 @@
               </div>
             </div>
           </div>`;
-      }).join('') : `<p class="text-xs text-slate-500 italic">Todo al día. ¡No hay recados pendientes!</p>`;
+      }).join('') : `<p class="text-xs text-slate-500 italic">¡Todo al día! No hay recados pendientes.</p>`;
 
-      // Inicializar o actualizar el Calendario Visual
+      // Actualizar Calendario Visual
       const calEl = document.getElementById('calendar');
       if (calendarInstance) calendarInstance.destroy();
       calendarInstance = new FullCalendar.Calendar(calEl, {
@@ -398,7 +532,7 @@
     async function completarTarea(issueNumber) {
       const cfg = obtenerConfigInicial();
       if (!cfg.token) {
-        alert('Para cerrar tareas directamente marcando la casilla desde el móvil, pega tu Personal Access Token en el botón ⚙️ de arriba a la derecha.');
+        alert('Para marcar tareas como hechas desde el móvil, añade tu Token en el botón ⚙️.');
         cargarDatos();
         return;
       }
@@ -412,7 +546,7 @@
           },
           body: JSON.stringify({ state: 'closed' })
         });
-        if (!res.ok) throw new Error('Error al cerrar la tarea. Verifica los permisos de tu Token.');
+        if (!res.ok) throw new Error('Error al cerrar la tarea. Verifica tu Token.');
         cargarDatos();
       } catch (e) {
         alert(e.message);
