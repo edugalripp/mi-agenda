@@ -408,16 +408,8 @@
       }).join('');
     }
 
-    function procesarIssues(issues) {
-      const ASIGNATURAS_FIJAS = [
-        "Ingeniería de Procesos y Térmica"
-        "Gestión e innovación de la empresa"
-        "Electricidad y Energía"
-        "Mecánica"
-        "Organización Industrial"
-        "TFG"
-        "Trámites / General"
-      ];
+function procesarIssues(issues) {
+  datosPorAsignatura = {};
 
       datosPorAsignatura = {};
       ASIGNATURAS_FIJAS.forEach(nombre => {
