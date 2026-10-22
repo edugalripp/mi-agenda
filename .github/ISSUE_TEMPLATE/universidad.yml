@@ -1,44 +1,51 @@
-name: "📚 Entrega o Examen (Universidad)"
-description: "Añadir un examen, entrega de práctica, hito de proyecto o trámite académico."
+name: "📚 Tarea, Entrega o Examen (Universidad)"
+description: "Añadir un examen, entrega con fecha o tarea pendiente de estudio a una asignatura."
 title: "[UNI] "
 labels: ["universidad"]
 body:
   - type: dropdown
-    id: tipo_evento
-    attributes:
-      label: "Tipo de evento"
-      description: "¿Qué tipo de tarea académica es?"
-      options:
-        - Examen
-        - Entrega de Práctica
-        - Proyecto / TFG
-        - Trámite Administrativo
-    validations:
-      required: true
-
-  - type: input
     id: asignatura
     attributes:
       label: "Asignatura o Proyecto"
-      description: "Nombre de la materia o proyecto asociado"
-      placeholder: "Ej. Máster, Robótica, Electrónica..."
+      description: "Selecciona la asignatura para agruparla en su ficha de la App"
+      options:
+        - Ingeniería de Procesos y Térmica
+        - Gestión e innovación de la empresa
+        - Electricidad y Energía
+        - Mecánica
+        - Organización Industrial
+        - TFG
+        - Trámites / General
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tipo_evento
+    attributes:
+      label: "Tipo de elemento"
+      description: "Elige 'Tarea / Estudio' si es algo pendiente de la asignatura sin fecha de entrega fija."
+      options:
+        - Examen
+        - Entrega de Práctica
+        - Tarea / Estudio (Sin fecha fija)
+        - Otros
     validations:
       required: true
 
   - type: input
     id: fecha_limite
     attributes:
-      label: "Fecha límite"
-      description: "Escribe la fecha en formato AAAA-MM-DD para que el calendario la detecte."
+      label: "Fecha límite (Obligatoria en Exámenes y Entregas)"
+      description: "Formato AAAA-MM-DD. Déjalo en blanco si es una tarea normal de estudio."
       placeholder: "2026-12-15"
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: detalles
     attributes:
-      label: "Detalles / Requisitos"
-      description: "Apuntes, enlaces a documentación o subtareas."
-      placeholder: "- [ ] Subir PDF\n- [ ] Revisar código"
+      label: "Detalles / Subtareas"
+      description: "Todo lo que quieras anotar o desglosar para cuando entres a la asignatura."
+      placeholder: "- [ ] Hacer ejercicios boletín 2\n- [ ] Revisar fórmulas"
     validations:
       required: false
