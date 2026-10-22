@@ -409,7 +409,19 @@
     }
 
     function procesarIssues(issues) {
+      const ASIGNATURAS_FIJAS = [
+        "C.F. Mecánica",
+        "C.F. Ingeniería de Procesos",
+        "C.F. Ingeniería Térmica",
+        "C.F. Electricidad y Energía",
+        "Organización Industrial",
+        "TFG"
+      ];
+
       datosPorAsignatura = {};
+      ASIGNATURAS_FIJAS.forEach(nombre => {
+        datosPorAsignatura[nombre] = { examenes: [], entregas: [], tareas: [] };
+      });
       const todosLosExamenes = [];
       const todoIssues = [];
       const eventosCalendario = [];
